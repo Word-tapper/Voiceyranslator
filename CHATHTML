@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice to Italian Translator</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      text-align: center;
+    }
+    button {
+      font-size: 1.2rem;
+      padding: 1rem 2rem;
+      margin-top: 1rem;
+    }
+    #original, #translated {
+      margin-top: 1.5rem;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎤 Speak to Translate</h1>
+  <button id="speakBtn">Tap and Speak</button>
+  <div id="original"></div>
+  <div id="translated"></div>
+
+  <script>
+    const speakBtn = document.getElementById('speakBtn');
+    const original = document.getElementById('original');
+    const translated = document.getElementById('translated');
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+
+    speakBtn.onclick = () => {
+      recognition.start();
+    };
+
+    recognition.onresult = async (event) => {
+      const spokenText = event.results[0][0].transcript;
+      original.innerHTML = You said: <strong>${spokenText}</strong>;
+
+      // Translate using fetch to OpenAI API (placeholder)
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer YOUR_OPENAI_API_KEY"
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: [
+            { role: "system", content: "Translate the user's English sentence into Italian." },
+            { role: "user", content: spokenText }
+          ]
+        })
+      });
+
+      const data = await response.json();
+      const italian = data.choices[0].message.content;
+      translated.innerHTML = Italian: <strong>${italian}</strong>;
+    };
+
+    recognition.onerror = (err) => {
+      original.innerText = 'Error: ' + err.error;
+    };
+  </script>
+</body>
+</html>
